@@ -17,7 +17,7 @@ import pytest
 
 import demistomock as demisto
 from CommonServerPython import Common, ScheduledCommand
-from Packs.CrowdStrikeFalconSandboxV2.Integrations.CrowdstrikeFalconSandboxV2.CrowdstrikeFalconSandboxV2 import Client, \
+from CrowdstrikeFalconSandboxV2 import Client, \
     validated_search_terms, get_search_term_args, split_query_to_term_args, crowdstrike_result_command, \
     crowdstrike_scan_command, map_dict_keys, BWCFile, crowdstrike_submit_url_command, crowdstrike_submit_sample_command, \
     get_api_id, get_submission_arguments

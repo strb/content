@@ -18,7 +18,7 @@ import demistomock as demisto
 from CommonServerPython import *  # noqa # pylint: disable=unused-wildcard-import
 import requests
 import traceback
-from typing import Dict, Any
+from typing import Dict, Any, Tuple
 
 # Disable insecure warnings
 requests.packages.urllib3.disable_warnings()  # pylint: disable=no-member
@@ -424,7 +424,7 @@ def crowdstrike_analysis_overview_refresh_command(client: Client, args: Dict[str
 
 
 @poll('cs-falcon-sandbox-result')
-def crowdstrike_result_command(client: Client, args: Dict[str, Any]) -> (bool, CommandResults):
+def crowdstrike_result_command(client: Client, args: Dict[str, Any]):
     key = get_api_id(args)
     report_response = client.get_report(key, args['file-type'])
     demisto.debug(f'get report response code: {report_response.status_code}')

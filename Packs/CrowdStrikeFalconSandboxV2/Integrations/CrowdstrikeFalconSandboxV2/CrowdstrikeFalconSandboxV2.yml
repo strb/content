@@ -2926,6 +2926,5 @@ script:
           type: String
   runonce: false
 tests:
-  - VxStream Test
-  - Detonate File - Generic Test
+  - CrowdstrikeFalconSandboxV2 Test
 fromversion: 6.2.0

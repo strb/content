@@ -20,7 +20,7 @@ from CommonServerPython import Common, ScheduledCommand
 from CrowdstrikeFalconSandboxV2 import Client, \
     validated_search_terms, get_search_term_args, split_query_to_term_args, crowdstrike_result_command, \
     crowdstrike_scan_command, map_dict_keys, BWCFile, crowdstrike_submit_url_command, crowdstrike_submit_sample_command, \
-    get_api_id, get_submission_arguments
+    get_api_id, get_submission_arguments, crowdstrike_analysis_overview_summary_command
 
 BASE_URL = 'https://test.com'
 
@@ -372,3 +372,28 @@ def test_get_api_id_deprecated_env_id():
 def test_get_submission_arguments():
     assert {'environment_id': 200, 'submit_name': 'steve'} == \
            get_submission_arguments({'environmentId': 200, 'environmentID': 300, 'submit_name': 'steve'})
+
+
+def test_crowdstrike_analysis_overview_summary_command(requests_mock):
+    """
+
+      Given:
+        - any file hash
+
+      When:
+        - getting analysis summary
+
+      Then:
+        - get a response
+      """
+    response_json = {
+        "sha256": "216d8bc9e11521765020fc50de43fb3eb40269d652726506ca30ea800033a5a9",
+        "threat_score": None,
+        "verdict": "malicious",
+        "analysis_start_time": None,
+        "last_multi_scan": "2021-12-01T15:44:18+00:00",
+        "multiscan_result": 88
+    }
+    requests_mock.get(BASE_URL + '/overview/filehash/summary', json=response_json)
+    result = crowdstrike_analysis_overview_summary_command(client, {'file': 'filehash'})
+    assert result.outputs == response_json

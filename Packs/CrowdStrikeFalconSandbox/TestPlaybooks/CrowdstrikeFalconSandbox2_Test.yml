@@ -1028,7 +1028,7 @@ tasks:
       - - operator: isEqualString
           left:
             value:
-              simple: Crowdstrike.State.state
+              simple: CrowdStrike.State.state
             iscontext: true
           right:
             value:

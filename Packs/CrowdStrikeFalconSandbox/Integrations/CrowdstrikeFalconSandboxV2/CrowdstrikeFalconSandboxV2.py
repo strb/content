@@ -239,8 +239,10 @@ def submission_response(client, response, polling):
                                      raw_response=response, outputs=response,
                                      readable_output=tableToMarkdown("Submission Data:", response,
                                                                      headerTransform=underscore_to_space)),
-                      CommandResults('CrowdStrike.JobID', response['job_id']), #BW compatibility
-                      CommandResults('CrowdStrike.EnvironmentID', response['environment_id'])]
+                      CommandResults('CrowdStrike.JobID', outputs=response['job_id'],
+                                     readable_output=f"JobID: {response['job_id']}"),
+                      CommandResults('CrowdStrike.EnvironmentID', outputs=response['environment_id'],
+                                     readable_output=f"EnvironmentID: {response['environment_id']}")]
 
     if not polling:
         return submission_res

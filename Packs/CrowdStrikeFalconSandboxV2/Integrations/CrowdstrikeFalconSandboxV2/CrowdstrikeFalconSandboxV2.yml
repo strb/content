@@ -2892,16 +2892,16 @@ script:
           predefined:
             - ""
       outputs:
-        - contextPath: Crowdstrike.State.state
+        - contextPath: CrowdStrike.State.state
           description: ''
           type: String
-        - contextPath: Crowdstrike.State.error_type
+        - contextPath: CrowdStrike.State.error_type
           description: ''
           type: String
-        - contextPath: Crowdstrike.State.error_origin
+        - contextPath: CrowdStrike.State.error_origin
           description: ''
           type: String
-        - contextPath: Crowdstrike.State.error
+        - contextPath: CrowdStrike.State.error
           description: ''
           type: String
   runonce: false

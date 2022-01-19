@@ -454,7 +454,7 @@ def underscore_to_space(x: str):
 def crowdstrike_report_state_command(client: Client, args: Dict[str, Any]):
     key = get_api_id(args)
     state = client.get_state(key)
-    return CommandResults(outputs_prefix="Crowdstrike.State", raw_response=state, outputs=state,
+    return CommandResults(outputs_prefix="CrowdStrike.State", raw_response=state, outputs=state,
                           readable_output=tableToMarkdown("State", state, headerTransform=underscore_to_space))
 
 

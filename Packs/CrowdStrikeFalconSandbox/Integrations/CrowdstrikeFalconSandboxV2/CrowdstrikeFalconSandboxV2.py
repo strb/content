@@ -91,7 +91,7 @@ def translate_verdict(param: str):
         'NoVerdict': 2,
         'NoSpecificThreat': 3,
         'Suspicious': 4,
-        'Malicious': 5  # TODO different than v1 but acc to docs...
+        'Malicious': 5
     }[param]
 
 
@@ -151,49 +151,6 @@ def test_module(client: Client, _) -> str:
         else:
             raise e
     return message
-
-
-def poll(name: str, interval: int = 30, timeout: int = 600,
-         poll_message: str = 'Fetching Results:'):  # todo move to base?
-    """To use on a function that should rerun itself
-    Commands that use this decorator must have a Polling argument, polling: true in yaml,
-    and a hidden polled_once argument.
-    Commands that use this decorator should return a tuple. Arg1 should be a boolean or a function that returns a boolean
-    as to whether or not it should continue to poll. Arg2 should be CommandRTesults in case of success,
-    or error CommandResults in case of Polling=false
-    ----------
-    name : str
-        The name of the command
-    interval : int
-        How many seconds until the next run
-    timeout : int
-        How long
-    Raises
-    ------
-    DemistoException
-        If the server version doesnt support Scheduled Commands (< 6.2.0)
-    """
-
-    def dec(func):
-        def inner(client, args: Dict[str, Any]) -> CommandResults:
-            if args.get('Polling'):
-                ScheduledCommand.raise_error_if_not_supported()
-                continue_poll_provider, result = func(client, args)
-                should_poll = continue_poll_provider if isinstance(continue_poll_provider, bool) \
-                    else continue_poll_provider()
-                if not should_poll:
-                    return result
-                polling_args = args
-                return CommandResults(readable_output=poll_message if not args.get('polled_once') else None,
-                                      scheduled_command=ScheduledCommand(command=name, next_run_in_seconds=interval,
-                                                                         args={**polling_args, 'polled_once': True},
-                                                                         timeout_in_seconds=timeout))
-            else:
-                return func(client, args)[1]
-
-        return inner
-
-    return dec
 
 
 def get_default_file_name(fileype):
@@ -360,8 +317,8 @@ def crowdstrike_search_command(client: Client, args: Dict[str, Any]):
     ), *[convert_to_file_res(res) for res in response['result']]]
 
 
-@poll('cs-falcon-sandbox-scan', interval=20)
-def crowdstrike_scan_command(client: Client, args: Dict[str, Any]):
+@poll('cs-falcon-sandbox-scan')
+def crowdstrike_scan_command(client: Client, args: Dict[str, Any]) -> PollResult:
     hashes = args['file'].split(',')
     scan_response = client.scan(hashes)
 
@@ -391,14 +348,14 @@ def crowdstrike_scan_command(client: Client, args: Dict[str, Any]):
                                      readable_output=create_scan_results_readable_output(scan_response)),
                       *[file_with_bwc_fields(res) for res in scan_response]]
     if len(scan_response) != 0:
-        return False, command_result
+        return PollResult(command_result)
     try:
         if len(hashes) == 1:
             key = get_api_id(args)
-            return lambda: not has_error_state(client, key), command_result
+            return PollResult(continue_to_poll=lambda: not has_error_state(client, key), response=command_result)
     except ValueError:
         demisto.debug(f'Cannot get a key to check state for {hashes}')
-    return True, command_result
+    return PollResult(continue_to_poll=True, response=command_result)
 
 
 def crowdstrike_analysis_overview_summary_command(client: Client, args: Dict[str, Any]):
@@ -427,7 +384,7 @@ def crowdstrike_analysis_overview_refresh_command(client: Client, args: Dict[str
 
 
 @poll('cs-falcon-sandbox-result')
-def crowdstrike_result_command(client: Client, args: Dict[str, Any]):
+def crowdstrike_result_command(client: Client, args: Dict[str, Any]) -> PollResult:
     key = get_api_id(args)
     report_response = client.get_report(key, args['file-type'])
     demisto.debug(f'get report response code: {report_response.status_code}')
@@ -438,7 +395,7 @@ def crowdstrike_result_command(client: Client, args: Dict[str, Any]):
                                file_type=EntryType.ENTRY_INFO_FILE)]
         if args.get('file'):
             ret_list.append(crowdstrike_scan_command(client, args))
-        return False, ret_list
+        return PollResult(ret_list)
 
     else:
         error_response = CommandResults(raw_response=report_response,
@@ -447,7 +404,7 @@ def crowdstrike_result_command(client: Client, args: Dict[str, Any]):
                                                         + f"{report_response.text}",
                                         entry_type=entryTypes['error'])
 
-        return lambda: not has_error_state(client, key), error_response
+        return PollResult(continue_to_poll=lambda: not has_error_state(client, key), response=error_response)
 
 
 def underscore_to_space(x: str):

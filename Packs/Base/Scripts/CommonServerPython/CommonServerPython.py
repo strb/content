@@ -8846,3 +8846,68 @@ def shorten_string_for_printing(source_string, max_length=64):
 ###########################################
 register_module_line('CommonServerPython', 'end', __line__())
 register_module_line('CustomScriptIntegration', 'start', __line__())
+
+class PollResult:
+    def __init__(self, response,continue_to_poll = False, args_for_next_run = None):
+        """
+        Constructor for PollResult
+
+        :type response: ``Any``
+        :param response:  The response of the command in the event of success,
+        or in case of failure but Polling is false
+
+        :type continue_to_poll: ``Union[bool, Callable]``
+        :param continue_to_poll: an iterable of relevant keys list from the json. Notice we save it as a set in the class
+
+        :type args_for_next_run: ``Dict``
+        :param args_for_next_run: The arguments to use in the next iteration. Will use the input args in case of None
+
+        """
+        self.response = response
+        self.continue_to_poll = continue_to_poll
+        self.args_for_next_run = args_for_next_run
+
+
+def poll(name: str, interval: int = 30, timeout: int = 600, poll_message: str = 'Fetching Results:',
+         polling_arg_name="Polling"):
+    """
+    To use on a function that should rerun itself
+    Commands that use this decorator must have a Polling argument, polling: true in yaml,
+    and a hidden polled_once argument.
+    Commands that use this decorator should return a PollResult.
+    ----------
+    name : str
+        The name of the command
+    interval : int
+        How many seconds until the next run
+    timeout : int
+        How long
+    poll_message : str
+    The message to display in the war room while polling
+    Raises
+    ------
+    DemistoException
+        If the server version doesnt support Scheduled Commands (< 6.2.0)
+    """
+
+    def dec(func):
+        def inner(client, args: Dict[str, Any]) -> CommandResults:
+            if args.get(polling_arg_name):
+                ScheduledCommand.raise_error_if_not_supported()
+                poll_result : PollResult = func(client, args)
+
+                should_poll = poll_result.continue_to_poll if isinstance(poll_result.continue_to_poll, bool) \
+                    else poll_result.continue_to_poll()
+                if not should_poll:
+                    return poll_result.response
+                return CommandResults(readable_output=poll_message if not args.get('polled_once') else None,
+                                      scheduled_command=ScheduledCommand(command=name, next_run_in_seconds=interval,
+                                                                         args={**(poll_result.args_for_next_run or args),
+                                                                               'polled_once': True},
+                                                                         timeout_in_seconds=timeout))
+            else:
+                return func(client, args).response
+
+        return inner
+
+    return dec

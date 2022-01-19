@@ -8901,8 +8901,9 @@ def poll(name, interval = 30, timeout = 600, poll_message = 'Fetching Results:',
                 if not should_poll:
                     return poll_result.response
                 poll_args = poll_result.args_for_next_run or args
+                readable_output = poll_message if not args.get('polled_once') else None
                 poll_args['polled_once'] = True
-                return CommandResults(readable_output=poll_message if not args.get('polled_once') else None,
+                return CommandResults(readable_output= readable_output,
                                       scheduled_command=ScheduledCommand(command=name, next_run_in_seconds=interval,
                                                                          args=poll_args,
                                                                          timeout_in_seconds=timeout))

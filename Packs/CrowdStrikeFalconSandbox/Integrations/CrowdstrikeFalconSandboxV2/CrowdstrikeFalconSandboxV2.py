@@ -136,7 +136,7 @@ def get_api_id(args: Dict[str, Any]):
         raise ValueError('Must supply JobID or environmentID and file')
 
 
-def test_module(client: Client, _) -> str:
+def test_module(client: Client) -> str:
     """Tests API connectivity and authentication'
     :return: 'ok' if test passed, anything else will fail the test.
     :rtype: ``str``
@@ -494,29 +494,36 @@ def main() -> None:
             headers=headers,
             proxy=proxy)
 
-        backwards_dictionary = {
-            test_module: ['test-module'],
-            crowdstrike_search_command: ['cs-falcon-sandbox-search', 'crowdstrike-search'],
-            crowdstrike_scan_command: ['cs-falcon-sandbox-scan', 'crowdstrike-scan', 'file'],
-            crowdstrike_get_environments_command: ['crowdstrike-get-environments',
-                                                   'cs-falcon-sandbox-get-environments'],
-            crowdstrike_get_screenshots_command: ['cs-falcon-sandbox-get-screenshots', 'crowdstrike-get-screenshots'],
-            crowdstrike_result_command: ['cs-falcon-sandbox-result', 'crowdstrike-result'],
-            crowdstrike_analysis_overview_command: ['cs-falcon-sandbox-analysis-overview'],
-            crowdstrike_analysis_overview_summary_command: ['cs-falcon-sandbox-analysis-overview-summary'],
-            crowdstrike_analysis_overview_refresh_command: ['cs-falcon-sandbox-analysis-overview-refresh'],
-            crowdstrike_submit_sample_command: ['crowdstrike-submit-sample', 'cs-falcon-sandbox-submit-sample'],
-            crowdstrike_submit_url_command: ['cs-falcon-sandbox-submit-url', 'crowdstrike-submit-url'],
-            crowdstrike_sample_download_command: ['cs-falcon-sandbox-sample-download'],
-            crowdstrike_report_state_command: ['cs-falcon-sandbox-report-state']
-        }
-        commands_dict = {}
-        for command in backwards_dictionary:
-            for command_text in backwards_dictionary[command]:
-                commands_dict[command_text] = command
-        command = commands_dict.get(demisto.command())
-        if command is None:
+
+        if demisto.command() in ['test-module']:
+            command = test_module
+        elif demisto.command() in ['cs-falcon-sandbox-search', 'crowdstrike-search']:
+            command = crowdstrike_search_command
+        elif demisto.command() in ['cs-falcon-sandbox-scan', 'crowdstrike-scan', 'file']:
+            command = crowdstrike_scan_command
+        elif demisto.command() in ['crowdstrike-get-environments','cs-falcon-sandbox-get-environments']:
+            command = crowdstrike_get_environments_command
+        elif demisto.command() in ['cs-falcon-sandbox-get-screenshots', 'crowdstrike-get-screenshots']:
+            command = crowdstrike_get_screenshots_command
+        elif demisto.command() in ['cs-falcon-sandbox-result', 'crowdstrike-result']:
+            command = crowdstrike_result_command
+        elif demisto.command() in ['cs-falcon-sandbox-analysis-overview']:
+            command = crowdstrike_analysis_overview_command
+        elif demisto.command() in ['cs-falcon-sandbox-analysis-overview-summary']:
+            command = crowdstrike_analysis_overview_summary_command
+        elif demisto.command() in ['cs-falcon-sandbox-analysis-overview-refresh']:
+            command = crowdstrike_analysis_overview_refresh_command
+        elif demisto.command() in ['crowdstrike-submit-sample', 'cs-falcon-sandbox-submit-sample']:
+            command = crowdstrike_submit_sample_command
+        elif demisto.command() in ['cs-falcon-sandbox-submit-url', 'crowdstrike-submit-url']:
+            command = crowdstrike_submit_url_command
+        elif demisto.command() in ['cs-falcon-sandbox-sample-download']:
+            command = crowdstrike_sample_download_command
+        elif demisto.command() in ['cs-falcon-sandbox-report-state']:
+            command = crowdstrike_report_state_command
+        else:
             raise NotImplementedError('Unrecognized Command')
+
         return_results(command(client, args))
 
     except Exception as e:

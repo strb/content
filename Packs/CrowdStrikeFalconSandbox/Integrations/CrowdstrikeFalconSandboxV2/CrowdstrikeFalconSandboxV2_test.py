@@ -325,7 +325,7 @@ def test_crowdstrike_submit_url_command_no_poll(requests_mock):
     }
     mock_call = requests_mock.post(BASE_URL + '/submit/url', json=submit_response)
     result = crowdstrike_submit_url_command(client, {'url': BASE_URL, 'environmentID': 300, 'comment': 'some comment'})
-    assert result.outputs['Submit'] == submit_response
+    assert result[0].outputs == submit_response
     assert 'environment_id' in mock_call.last_request.text
     assert 'comment' in mock_call.last_request.text
 
@@ -336,8 +336,8 @@ def test_crowdstrike_submit_sample_command(mocker, requests_mock):
     mocker.patch.object(demisto, 'getFilePath',
                         return_value={'id': id, 'path': './test_data/scan_response.json', 'name': 'scan_response.json'})
     result = crowdstrike_submit_sample_command(client, {'entryId': '33'})
-    assert result.outputs['Submit'] == submit_response
-    assert result.outputs['JobID'] == submit_response['job_id']
+    assert result[0].outputs == submit_response
+    assert result[1].outputs == submit_response['job_id']
 
 
 def test_crowdstrike_submit_url_command_poll(requests_mock, mocker):
@@ -364,7 +364,7 @@ def test_crowdstrike_submit_url_command_poll(requests_mock, mocker):
 
     assert submit_call.called and search_call.called and state_call.called
 
-    assert demisto.results.call_args.args[0]['Contents'] == submit_response
+    assert submit_response in [args.args[0]['Contents'] for args in list(demisto.results.call_args_list)]
     assert result.scheduled_command is not None
 
 

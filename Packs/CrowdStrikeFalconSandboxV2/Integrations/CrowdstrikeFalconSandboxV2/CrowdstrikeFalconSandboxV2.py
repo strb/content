@@ -342,10 +342,12 @@ def crowdstrike_search_command(client: Client, args: Dict[str, Any]):
 
     # each indicator needs its own CR since indicators is deprecated.
     def convert_to_file_res(res):
-        return CommandResults(indicator=BWCFile(res, key_name_changes, False, size=res['size'], sha256=res['sha256'],
-                                                dbot_score=Common.DBotScore.NONE,
-                                                extension=res['type_short'], name=res['submit_name'],
-                                                malware_family=res['vx_family']))
+        return CommandResults(readable_output=' ', indicator=BWCFile(res, key_name_changes, False, size=res['size'],
+                                                                     sha256=res['sha256'],
+                                                                     dbot_score=Common.DBotScore.NONE,
+                                                                     extension=res['type_short'],
+                                                                     name=res['submit_name'],
+                                                                     malware_family=res['vx_family']))
 
     return [CommandResults(
         raw_response=response,
@@ -365,7 +367,8 @@ def crowdstrike_scan_command(client: Client, args: Dict[str, Any]):
     scan_response = client.scan(hashes)
 
     def file_with_bwc_fields(res):
-        return CommandResults(indicator=BWCFile(res, {
+        # todo what should be human readable? implement some hidden=true attribute?
+        return CommandResults(readable_output=' ', indicator=BWCFile(res, {
             'sha1': 'SHA1',
             'sha256': 'SHA256',
             'md5': 'MD5',
@@ -377,10 +380,13 @@ def crowdstrike_scan_command(client: Client, args: Dict[str, Any]):
             'url_analysis': 'isurlanalysis',
             'interesting:': 'isinteresting',
             'vx_family': 'family'}, False, size=res['size'], file_type=res['type'], sha1=res['sha1'],
-                                                sha256=res['sha256'], md5=res['md5'], sha512=res['sha512'],
-                                                name=res['submit_name'],
-                                                ssdeep=res['ssdeep'], malware_family=res['vx_family'],
-                                                dbot_score=get_dbot_score(res['sha256'], res['threat_level'])))
+                                                                     sha256=res['sha256'], md5=res['md5'],
+                                                                     sha512=res['sha512'],
+                                                                     name=res['submit_name'],
+                                                                     ssdeep=res['ssdeep'],
+                                                                     malware_family=res['vx_family'],
+                                                                     dbot_score=get_dbot_score(res['sha256'],
+                                                                                               res['threat_level'])))
 
     command_result = [CommandResults(outputs_prefix='CrowdStrike.Report',
                                      raw_response=scan_response, outputs=scan_response,
@@ -530,6 +536,7 @@ def main() -> None:
             headers=headers,
             proxy=proxy)
 
+        #todo fix for linter
         backwards_dictionary = {
             test_module: ['test-module'],
             crowdstrike_search_command: ['cs-falcon-sandbox-search', 'crowdstrike-search'],

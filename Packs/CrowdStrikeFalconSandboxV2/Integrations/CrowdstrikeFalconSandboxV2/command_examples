@@ -1,0 +1,4 @@
+!cs-falcon-sandbox-get-environments
+!cs-falcon-sandbox-
+!cs-falcon-sandbox-submit-url url=example.com environmentID=300
+!cs-falcon-sandbox-result JobID=61e7bb4a7b5a2c0e1f2a62dd file-type=misp

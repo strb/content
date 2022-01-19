@@ -111,7 +111,8 @@ def test_split_query_to_term_args(query_string, query_dict):
     assert query_dict == split_query_to_term_args(query_string)
 
 
-def test_results_in_progress_polling_true(mocker, requests_mock):
+@pytest.mark.parametrize('state', ['IN_PROGRESS', 'IN_QUEUE'])
+def test_results_poll_state_polling_true(state, mocker, requests_mock):
     """
 
     Given:
@@ -128,7 +129,7 @@ def test_results_in_progress_polling_true(mocker, requests_mock):
     filetype = "pdf"
     args = {'JobID': key, 'Polling': True, 'file-type': 'pdf'}
     requests_mock.get(BASE_URL + f"/report/{key}/report/{filetype}", status_code=404)
-    state_call = requests_mock.get(BASE_URL + f"/report/{key}/state", json={'state': 'IN_PROGRESS'})
+    state_call = requests_mock.get(BASE_URL + f"/report/{key}/state", json={'state': state})
 
     response = crowdstrike_result_command(client, args)
     sc = response.scheduled_command

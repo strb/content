@@ -83,11 +83,6 @@ script:
           description: ""
           required: false
           isArray: false
-          defaultValue: false
-          auto: PREDEFINED
-          predefined:
-            - "true"
-            - "false"
       outputs:
         - contextPath: CrowdStrike.Report.job_id
           description: ''
@@ -258,11 +253,6 @@ script:
           description: ""
           required: false
           isArray: false
-          defaultValue: false
-          auto: PREDEFINED
-          predefined:
-            - "true"
-            - "false"
       outputs:
         - contextPath: CrowdStrike.Report.job_id
           description: ''
@@ -1483,11 +1473,6 @@ script:
           description: ""
           required: false
           isArray: false
-          defaultValue: false
-          auto: PREDEFINED
-          predefined:
-            - "true"
-            - "false"
         - name: environmentID
           description: 'Environment ID. Available environments ID: 300: "Linux (Ubuntu
             16.04, 64 bit)"", 200: "Android Static Analysis", 120: "Windows 7 64
@@ -1707,11 +1692,6 @@ script:
           description: ""
           required: false
           isArray: false
-          defaultValue: false
-          auto: PREDEFINED
-          predefined:
-            - "true"
-            - "false"
         - name: environmentID
           description: 'Environment ID. Available environments ID: 300: "Linux (Ubuntu
             16.04, 64 bit)"", 200: "Android Static Analysis", 120: "Windows 7 64
@@ -2033,8 +2013,8 @@ script:
             - tor
             - simulated
         - name: email
-          description: Optional E-Mail address that may be associated with the submission
-            for notification
+          description: 'Optional E-Mail address that may be associated with the submission
+            for notification'
           required: false
           isArray: false
           defaultValue: ""

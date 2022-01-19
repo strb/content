@@ -235,11 +235,12 @@ def get_submission_arguments(args: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def submission_response(client, response, polling):
-    submission_res = CommandResults(outputs_prefix='CrowdStrike', outputs_key_field='submission_id',
-                                    raw_response=response, outputs={'Submit': response, 'JobID': response['job_id'],
-                                                                    'EnvironmentID': response['environment_id']},
-                                    readable_output=tableToMarkdown("Submission Data:", response,
-                                                                    headerTransform=underscore_to_space))
+    submission_res = [CommandResults(outputs_prefix='CrowdStrike.Submit', outputs_key_field='submission_id',
+                                     raw_response=response, outputs=response,
+                                     readable_output=tableToMarkdown("Submission Data:", response,
+                                                                     headerTransform=underscore_to_space)),
+                      CommandResults('CrowdStrike.JobID', response['job_id']), #BW compatibility
+                      CommandResults('CrowdStrike.EnvironmentID', response['environment_id'])]
 
     if not polling:
         return submission_res

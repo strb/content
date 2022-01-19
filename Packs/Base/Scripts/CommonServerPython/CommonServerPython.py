@@ -8868,7 +8868,7 @@ class PollResult:
         self.args_for_next_run = args_for_next_run
 
 
-def poll(name: str, interval: int = 30, timeout: int = 600, poll_message: str = 'Fetching Results:',
+def poll(name, interval = 30, timeout = 600, poll_message = 'Fetching Results:',
          polling_arg_name="Polling"):
     """
     To use on a function that should rerun itself
@@ -8891,19 +8891,20 @@ def poll(name: str, interval: int = 30, timeout: int = 600, poll_message: str = 
     """
 
     def dec(func):
-        def inner(client, args: Dict[str, Any]) -> CommandResults:
+        def inner(client, args):
             if args.get(polling_arg_name):
                 ScheduledCommand.raise_error_if_not_supported()
-                poll_result : PollResult = func(client, args)
+                poll_result = func(client, args)
 
                 should_poll = poll_result.continue_to_poll if isinstance(poll_result.continue_to_poll, bool) \
                     else poll_result.continue_to_poll()
                 if not should_poll:
                     return poll_result.response
+                poll_args = poll_result.args_for_next_run or args
+                poll_args['polled_once'] = True
                 return CommandResults(readable_output=poll_message if not args.get('polled_once') else None,
                                       scheduled_command=ScheduledCommand(command=name, next_run_in_seconds=interval,
-                                                                         args={**(poll_result.args_for_next_run or args),
-                                                                               'polled_once': True},
+                                                                         args=poll_args,
                                                                          timeout_in_seconds=timeout))
             else:
                 return func(client, args).response

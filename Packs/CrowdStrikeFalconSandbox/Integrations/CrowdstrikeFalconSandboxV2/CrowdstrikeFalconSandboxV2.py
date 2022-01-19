@@ -301,7 +301,6 @@ def crowdstrike_submit_url_command(client: Client, args: Dict[str, Any]):
 
 def crowdstrike_submit_sample_command(client: Client, args: Dict[str, Any]):
     file_contents = demisto.getFilePath(args['entryId'])
-    # TODO is this a generic error when not found? Seems obscure. Add try except?
     submission_args = get_submission_arguments(args)
     response = client.submit_file(file_contents, submission_args)
     return submission_response(client, response, args.get('Polling'))
@@ -361,13 +360,12 @@ def crowdstrike_search_command(client: Client, args: Dict[str, Any]):
     ), *[convert_to_file_res(res) for res in response['result']]]
 
 
-@poll('cs-falcon-sandbox-scan')
+@poll('cs-falcon-sandbox-scan', interval=20)
 def crowdstrike_scan_command(client: Client, args: Dict[str, Any]):
     hashes = args['file'].split(',')
     scan_response = client.scan(hashes)
 
     def file_with_bwc_fields(res):
-        # todo what should be human readable? implement some hidden=true attribute?
         return CommandResults(readable_output=' ', indicator=BWCFile(res, {
             'sha1': 'SHA1',
             'sha256': 'SHA256',
@@ -453,7 +451,7 @@ def crowdstrike_result_command(client: Client, args: Dict[str, Any]):
 
 
 def underscore_to_space(x: str):
-    return pascalToSpace(underscoreToCamelCase(x))  # todo make better implementation in base?
+    return pascalToSpace(underscoreToCamelCase(x))
 
 
 def crowdstrike_report_state_command(client: Client, args: Dict[str, Any]):
@@ -536,7 +534,6 @@ def main() -> None:
             headers=headers,
             proxy=proxy)
 
-        #todo fix for linter
         backwards_dictionary = {
             test_module: ['test-module'],
             crowdstrike_search_command: ['cs-falcon-sandbox-search', 'crowdstrike-search'],

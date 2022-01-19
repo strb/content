@@ -18,7 +18,7 @@ import demistomock as demisto
 from CommonServerPython import *  # noqa # pylint: disable=unused-wildcard-import
 import requests
 import traceback
-from typing import Dict, Any, Tuple
+from typing import Dict, Any
 
 # Disable insecure warnings
 requests.packages.urllib3.disable_warnings()  # pylint: disable=no-member
@@ -340,22 +340,23 @@ def crowdstrike_search_command(client: Client, args: Dict[str, Any]):
                         'submit_name': 'submitname',
                         'analysis_start_time': 'start_time'}
 
+    # each indicator needs its own CR since indicators is deprecated.
     def convert_to_file_res(res):
-        return BWCFile(res, key_name_changes, False, size=res['size'], sha256=res['sha256'],
-                       dbot_score=Common.DBotScore.NONE,
-                       extension=res['type_short'], name=res['submit_name'], malware_family=res['vx_family'])
+        return CommandResults(indicator=BWCFile(res, key_name_changes, False, size=res['size'], sha256=res['sha256'],
+                                                dbot_score=Common.DBotScore.NONE,
+                                                extension=res['type_short'], name=res['submit_name'],
+                                                malware_family=res['vx_family']))
 
-    return CommandResults(
+    return [CommandResults(
         raw_response=response,
         outputs_prefix='CrowdStrike.Search',
         outputs_key_field='sha256',
         outputs=response['result'],
-        indicators=[convert_to_file_res(res) for res in response['result']],
         readable_output=tableToMarkdown("Search Results:", response['result'],
                                         ['submit_name', 'verdict', 'vx_family', 'threat_score', 'sha256', 'size',
                                          'environment_id', 'type', 'type_short', 'analysis_start_time'],
                                         removeNull=True, headerTransform=underscore_to_space)
-    )
+    ), *[convert_to_file_res(res) for res in response['result']]]
 
 
 @poll('cs-falcon-sandbox-scan')
@@ -364,7 +365,7 @@ def crowdstrike_scan_command(client: Client, args: Dict[str, Any]):
     scan_response = client.scan(hashes)
 
     def file_with_bwc_fields(res):
-        file = BWCFile(res, {
+        return CommandResults(indicator=BWCFile(res, {
             'sha1': 'SHA1',
             'sha256': 'SHA256',
             'md5': 'MD5',
@@ -376,17 +377,15 @@ def crowdstrike_scan_command(client: Client, args: Dict[str, Any]):
             'url_analysis': 'isurlanalysis',
             'interesting:': 'isinteresting',
             'vx_family': 'family'}, False, size=res['size'], file_type=res['type'], sha1=res['sha1'],
-            sha256=res['sha256'], md5=res['md5'], sha512=res['sha512'], name=res['submit_name'],
-            ssdeep=res['ssdeep'], malware_family=res['vx_family'],
-            dbot_score=get_dbot_score(res['sha256'], res['threat_level']))
+                                                sha256=res['sha256'], md5=res['md5'], sha512=res['sha512'],
+                                                name=res['submit_name'],
+                                                ssdeep=res['ssdeep'], malware_family=res['vx_family'],
+                                                dbot_score=get_dbot_score(res['sha256'], res['threat_level'])))
 
-        return file
-
-    files = [file_with_bwc_fields(res) for res in scan_response]
-
-    command_result = CommandResults(outputs_prefix='CrowdStrike.Report', indicators=files,
-                                    raw_response=scan_response, outputs=scan_response,
-                                    readable_output=create_scan_results_readable_output(scan_response))
+    command_result = [CommandResults(outputs_prefix='CrowdStrike.Report',
+                                     raw_response=scan_response, outputs=scan_response,
+                                     readable_output=create_scan_results_readable_output(scan_response)),
+                      *[file_with_bwc_fields(res) for res in scan_response]]
     if len(scan_response) != 0:
         return False, command_result
     try:

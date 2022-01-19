@@ -173,9 +173,10 @@ def test_results_in_progress_polling_true_with_file(mocker, requests_mock):
     assert file_result['Type'] == 9
     assert file_result['File'].endswith("pdf")
 
-    assert ['SUCCESS', 'SUCCESS'] == [o['state'] for o in scan_result.outputs]
-    assert ['malicious', 'malicious'] == [o['verdict'] for o in scan_result.outputs]
-    assert [False, False] == [o.bwc_fields['url_analysis'] for o in scan_result.indicators]
+    assert len(scan_result) == len(hash_response_json) + 1
+    assert ['SUCCESS', 'SUCCESS'] == [o['state'] for o in scan_result[0].outputs]
+    assert ['malicious', 'malicious'] == [o['verdict'] for o in scan_result[0].outputs]
+    assert [False, False] == [o.bwc_fields['url_analysis'] for o in map(lambda x: x.indicator, scan_result[1:])]
 
 
 def test_results_in_progress_polling_false(requests_mock):
@@ -237,8 +238,9 @@ def test_crowdstrike_scan_command_polling_false(requests_mock):
     """
     requests_mock.post(BASE_URL + '/search/hashes', json=[])
     response = crowdstrike_scan_command(client, {"file": "filehash"})
-    assert response.scheduled_command is None
-    assert response.outputs == []
+    assert len(response) == 1
+    assert response[0].scheduled_command is None
+    assert response[0].outputs == []
 
 
 def test_results_in_progress_polling_true_error_state(mocker, requests_mock):

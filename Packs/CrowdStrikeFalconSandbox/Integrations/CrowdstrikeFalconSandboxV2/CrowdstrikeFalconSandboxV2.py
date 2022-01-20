@@ -33,7 +33,7 @@ SUBMISSION_PARAMETERS = ('environmentID', 'environmentId', 'no_share_third_party
                          'input_sample_tampering', 'network_settings', 'email', 'comment', 'custom_cmd_line',
                          'custom_run_time', 'submit_name', 'priority', 'document_password', 'environment_variable',
                          )
-INTEGRATION_RELIABILITY = 'C - Fairly reliable'
+INTEGRATION_RELIABILITY: str = 'C - Fairly reliable'
 
 
 class Client(BaseClient):
@@ -338,8 +338,12 @@ def crowdstrike_scan_command(client: Client, args: Dict[str, Any]) -> PollResult
             'url_analysis': 'isurlanalysis',
             'interesting:': 'isinteresting',
             'vx_family': 'family'}, False, size=res['size'], file_type=res['type'], sha1=res['sha1'],
-            sha256=res['sha256'], md5=res['md5'], sha512=res['sha512'], name=res['submit_name'], ssdeep=res['ssdeep'],
-            malware_family=res['vx_family'], dbot_score=get_dbot_score(res['sha256'], res['threat_level'])))
+                                                                     sha256=res['sha256'], md5=res['md5'],
+                                                                     sha512=res['sha512'], name=res['submit_name'],
+                                                                     ssdeep=res['ssdeep'],
+                                                                     malware_family=res['vx_family'],
+                                                                     dbot_score=get_dbot_score(res['sha256'],
+                                                                                               res['threat_level'])))
 
     command_result = [CommandResults(outputs_prefix='CrowdStrike.Report',
                                      raw_response=scan_response, outputs=scan_response,
@@ -488,7 +492,7 @@ def main() -> None:
             verify=verify_certificate,
             headers=headers,
             proxy=proxy)
-
+        command: Any
         if demisto.command() in ['test-module']:
             command = test_module
         elif demisto.command() in ['cs-falcon-sandbox-search', 'crowdstrike-search']:

@@ -33,7 +33,7 @@ SUBMISSION_PARAMETERS = ('environmentID', 'environmentId', 'no_share_third_party
                          'input_sample_tampering', 'network_settings', 'email', 'comment', 'custom_cmd_line',
                          'custom_run_time', 'submit_name', 'priority', 'document_password', 'environment_variable',
                          )
-INTEGRATION_RELIABILITY: str = 'C - Fairly reliable'
+INTEGRATION_RELIABILITY: Any = 'C - Fairly reliable'
 
 
 class Client(BaseClient):

@@ -484,7 +484,7 @@ def main() -> None:
         }
 
         client = Client(
-            base_url=demisto.params()['serverUrl'],
+            base_url=demisto.params().get('serverUrl'),
             verify=verify_certificate,
             headers=headers,
             proxy=proxy)

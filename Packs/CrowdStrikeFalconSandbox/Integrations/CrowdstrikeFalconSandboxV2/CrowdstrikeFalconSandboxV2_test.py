@@ -457,6 +457,8 @@ def test_get_default_file_name():
                                                         'crowdstrike_report_state_command')])
 def test_main(command_name, method_name, mocker):
     mocker.patch.object(demisto, 'command', return_value=command_name)
+    mocker.patch.object(demisto, 'params', return_value={})
+    mocker.patch.object(demisto, 'args', return_value={})
     env_method_mock = mocker.patch(f'CrowdstrikeFalconSandboxV2.{method_name}', return_value='OK')
     main()
     assert env_method_mock.called and env_method_mock.return_value == 'OK'

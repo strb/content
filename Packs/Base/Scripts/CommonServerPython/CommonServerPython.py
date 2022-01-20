@@ -8841,14 +8841,8 @@ def shorten_string_for_printing(source_string, max_length=64):
         return ret_value
 
 
-###########################################
-#     DO NOT ADD LINES AFTER THIS ONE     #
-###########################################
-register_module_line('CommonServerPython', 'end', __line__())
-register_module_line('CustomScriptIntegration', 'start', __line__())
-
 class PollResult:
-    def __init__(self, response,continue_to_poll = False, args_for_next_run = None):
+    def __init__(self, response, continue_to_poll=False, args_for_next_run=None):
         """
         Constructor for PollResult
 
@@ -8868,8 +8862,7 @@ class PollResult:
         self.args_for_next_run = args_for_next_run
 
 
-def poll(name, interval = 30, timeout = 600, poll_message = 'Fetching Results:',
-         polling_arg_name="Polling"):
+def poll(name, interval=30, timeout=600, poll_message='Fetching Results:', polling_arg_name="Polling"):
     """
     To use on a function that should rerun itself
     Commands that use this decorator must have a Polling argument, polling: true in yaml,
@@ -8887,7 +8880,7 @@ def poll(name, interval = 30, timeout = 600, poll_message = 'Fetching Results:',
     Raises
     ------
     DemistoException
-        If the server version doesnt support Scheduled Commands (< 6.2.0)
+        If the server version doesn't support Scheduled Commands (< 6.2.0)
     """
 
     def dec(func):
@@ -8903,7 +8896,7 @@ def poll(name, interval = 30, timeout = 600, poll_message = 'Fetching Results:',
                 poll_args = poll_result.args_for_next_run or args
                 readable_output = poll_message if not args.get('polled_once') else None
                 poll_args['polled_once'] = True
-                return CommandResults(readable_output= readable_output,
+                return CommandResults(readable_output=readable_output,
                                       scheduled_command=ScheduledCommand(command=name, next_run_in_seconds=interval,
                                                                          args=poll_args,
                                                                          timeout_in_seconds=timeout))
@@ -8913,3 +8906,10 @@ def poll(name, interval = 30, timeout = 600, poll_message = 'Fetching Results:',
         return inner
 
     return dec
+
+
+###########################################
+#     DO NOT ADD LINES AFTER THIS ONE     #
+###########################################
+register_module_line('CommonServerPython', 'end', __line__())
+register_module_line('CustomScriptIntegration', 'start', __line__())

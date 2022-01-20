@@ -136,7 +136,7 @@ def get_api_id(args: Dict[str, Any]):
         raise ValueError('Must supply JobID or environmentID and file')
 
 
-def test_module(client: Client) -> str:
+def test_module(client: Client, _) -> str:
     """Tests API connectivity and authentication'
     :return: 'ok' if test passed, anything else will fail the test.
     :rtype: ``str``
@@ -338,13 +338,8 @@ def crowdstrike_scan_command(client: Client, args: Dict[str, Any]) -> PollResult
             'url_analysis': 'isurlanalysis',
             'interesting:': 'isinteresting',
             'vx_family': 'family'}, False, size=res['size'], file_type=res['type'], sha1=res['sha1'],
-                                                                     sha256=res['sha256'], md5=res['md5'],
-                                                                     sha512=res['sha512'],
-                                                                     name=res['submit_name'],
-                                                                     ssdeep=res['ssdeep'],
-                                                                     malware_family=res['vx_family'],
-                                                                     dbot_score=get_dbot_score(res['sha256'],
-                                                                                               res['threat_level'])))
+            sha256=res['sha256'], md5=res['md5'], sha512=res['sha512'], name=res['submit_name'], ssdeep=res['ssdeep'],
+            malware_family=res['vx_family'], dbot_score=get_dbot_score(res['sha256'], res['threat_level'])))
 
     command_result = [CommandResults(outputs_prefix='CrowdStrike.Report',
                                      raw_response=scan_response, outputs=scan_response,
@@ -494,14 +489,13 @@ def main() -> None:
             headers=headers,
             proxy=proxy)
 
-
         if demisto.command() in ['test-module']:
             command = test_module
         elif demisto.command() in ['cs-falcon-sandbox-search', 'crowdstrike-search']:
             command = crowdstrike_search_command
         elif demisto.command() in ['cs-falcon-sandbox-scan', 'crowdstrike-scan', 'file']:
             command = crowdstrike_scan_command
-        elif demisto.command() in ['crowdstrike-get-environments','cs-falcon-sandbox-get-environments']:
+        elif demisto.command() in ['crowdstrike-get-environments', 'cs-falcon-sandbox-get-environments']:
             command = crowdstrike_get_environments_command
         elif demisto.command() in ['cs-falcon-sandbox-get-screenshots', 'crowdstrike-get-screenshots']:
             command = crowdstrike_get_screenshots_command

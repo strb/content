@@ -14,13 +14,16 @@ import io
 import json
 
 import pytest
+from freezegun import freeze_time
 
 import demistomock as demisto
 from CommonServerPython import Common, ScheduledCommand
 from CrowdstrikeFalconSandboxV2 import Client, \
     validated_search_terms, get_search_term_args, split_query_to_term_args, crowdstrike_result_command, \
     crowdstrike_scan_command, map_dict_keys, BWCFile, crowdstrike_submit_url_command, crowdstrike_submit_sample_command, \
-    get_api_id, get_submission_arguments, crowdstrike_analysis_overview_summary_command
+    get_api_id, get_submission_arguments, crowdstrike_analysis_overview_summary_command, \
+    crowdstrike_analysis_overview_command, get_default_file_name, validated_term, \
+    crowdstrike_analysis_overview_refresh_command, main
 
 BASE_URL = 'https://test.com'
 
@@ -34,6 +37,11 @@ client = Client(base_url=BASE_URL,
                 verify=False,
                 proxy=False,
                 headers={})
+
+
+def test_validated_term():
+    assert 'USA' == validated_term('country', 'USA')
+    assert 1 == validated_term('verdict', 'Whitelisted')
 
 
 def test_validated_search_terms():
@@ -400,3 +408,55 @@ def test_crowdstrike_analysis_overview_summary_command(requests_mock):
     requests_mock.get(BASE_URL + '/overview/filehash/summary', json=response_json)
     result = crowdstrike_analysis_overview_summary_command(client, {'file': 'filehash'})
     assert result.outputs == response_json
+
+
+def test_crowdstrike_analysis_overview_refresh_command(requests_mock):
+    call = requests_mock.get(BASE_URL + '/overview/filehash/refresh', status_code=200, json={})
+    assert 'Successful' == crowdstrike_analysis_overview_refresh_command(client, {'file': 'filehash'}).readable_output \
+           and call.called
+
+
+def test_crowdstrike_analysis_overview_command(requests_mock):
+    """
+
+    Given:
+      - any file hash
+
+    When:
+      - getting analysis overview
+
+    Then:
+      - get a response
+    """
+    response_json = {
+        "sha256": "216d8bc9e11521765020fc50de43fb3eb40269d652726506ca30ea800033a5a9",
+        "threat_score": None,
+        "verdict": "malicious",
+        "analysis_start_time": None,
+        "last_multi_scan": "2021-12-01T15:44:18+00:00",
+        "multiscan_result": 88,
+        'size': 40,
+        'type': 'pdf',
+        'last_file_name': 'steven.pdf'
+    }
+    requests_mock.get(BASE_URL + '/overview/filehash', json=response_json)
+    result = crowdstrike_analysis_overview_command(client, {'file': 'filehash'})
+    assert result.outputs == response_json
+    assert result.indicator is not None
+
+
+@freeze_time("2000-10-31")
+def test_get_default_file_name():
+    assert 'CrowdStrike_report_972950400.pdf' == get_default_file_name('pdf')
+
+
+@pytest.mark.parametrize('command_name, method_name', [('cs-falcon-sandbox-search', 'crowdstrike_search_command'),
+                                                       ('crowdstrike-get-environments',
+                                                        'crowdstrike_get_environments_command'),
+                                                       ('cs-falcon-sandbox-report-state',
+                                                        'crowdstrike_report_state_command')])
+def test_main(command_name, method_name, mocker):
+    mocker.patch.object(demisto, 'command', return_value=command_name)
+    env_method_mock = mocker.patch(f'CrowdstrikeFalconSandboxV2.{method_name}', return_value='OK')
+    main()
+    assert env_method_mock.called and env_method_mock.return_value == 'OK'

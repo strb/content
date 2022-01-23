@@ -303,7 +303,7 @@ def test_bwc_file_context():
 
     ed_val = "Static Analysis"
     type_val = "typeval"
-    sha256 = 'ee832579cffaf4079ff422a97d063c4badb02ce16ba7bb9f1f50273fd16f85af'
+    sha256 = 'filehash'
     context = BWCFile({"environment_description": ed_val, "type": type_val}, {"type": "type1"}, False, sha256=sha256,
                       dbot_score=Common.DBotScore.NONE).to_context()
     file_dict = context.popitem()[1]
@@ -329,7 +329,7 @@ def test_crowdstrike_submit_url_command_no_poll(requests_mock):
         "job_id": "jobid",
         "submission_id": "submissionId",
         "environment_id": 100,
-        "sha256": "9e37b19decf1ff7cb2b4d1617b4701006c51e175ef4c921c90e79a88eaf8c49a"
+        "sha256": "filehash"
     }
     mock_call = requests_mock.post(BASE_URL + '/submit/url', json=submit_response)
     result = crowdstrike_submit_url_command(client, {'url': BASE_URL, 'environmentID': 300, 'comment': 'some comment'})
@@ -398,7 +398,7 @@ def test_crowdstrike_analysis_overview_summary_command(requests_mock):
         - get a response
       """
     response_json = {
-        "sha256": "216d8bc9e11521765020fc50de43fb3eb40269d652726506ca30ea800033a5a9",
+        "sha256": "filehash",
         "threat_score": None,
         "verdict": "malicious",
         "analysis_start_time": None,
@@ -429,7 +429,7 @@ def test_crowdstrike_analysis_overview_command(requests_mock):
       - get a response
     """
     response_json = {
-        "sha256": "216d8bc9e11521765020fc50de43fb3eb40269d652726506ca30ea800033a5a9",
+        "sha256": "filehash",
         "threat_score": None,
         "verdict": "malicious",
         "analysis_start_time": None,

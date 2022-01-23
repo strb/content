@@ -78,7 +78,7 @@ script:
           required: false
           isArray: false
           defaultValue: false
-        - name: polled_once
+        - name: hide_polling_output
           deprecated: true
           description: ""
           required: false
@@ -248,7 +248,7 @@ script:
           required: false
           isArray: false
           defaultValue: false
-        - name: polled_once
+        - name: hide_polling_output
           deprecated: true
           description: ""
           required: false
@@ -1468,7 +1468,7 @@ script:
           defaultValue: ""
           predefined:
             - ""
-        - name: polled_once
+        - name: hide_polling_output
           deprecated: true
           description: ""
           required: false
@@ -1687,7 +1687,7 @@ script:
           defaultValue: ""
           predefined:
             - ""
-        - name: polled_once
+        - name: hide_polling_output
           deprecated: true
           description: ""
           required: false

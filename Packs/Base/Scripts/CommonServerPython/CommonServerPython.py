@@ -8842,7 +8842,7 @@ def shorten_string_for_printing(source_string, max_length=64):
 
 
 class PollResult:
-    def __init__(self, response, continue_to_poll=False, args_for_next_run=None):
+    def __init__(self, response,continue_to_poll = False, args_for_next_run = None, partial_result = None):
         """
         Constructor for PollResult
 
@@ -8856,17 +8856,21 @@ class PollResult:
         :type args_for_next_run: ``Dict``
         :param args_for_next_run: The arguments to use in the next iteration. Will use the input args in case of None
 
+        :type partial_result: ``CommandResults``
+        :param partial_result: CommandResults to return, even though we will poll again
+
         """
         self.response = response
         self.continue_to_poll = continue_to_poll
         self.args_for_next_run = args_for_next_run
+        self.partial_result = partial_result
 
 
 def poll(name, interval=30, timeout=600, poll_message='Fetching Results:', polling_arg_name="Polling"):
     """
     To use on a function that should rerun itself
     Commands that use this decorator must have a Polling argument, polling: true in yaml,
-    and a hidden polled_once argument.
+    and a hidden hide_polling_output argument.
     Commands that use this decorator should return a PollResult.
     ----------
     name : str
@@ -8893,13 +8897,16 @@ def poll(name, interval=30, timeout=600, poll_message='Fetching Results:', polli
                     else poll_result.continue_to_poll()
                 if not should_poll:
                     return poll_result.response
+
+                readable_output = poll_message if not args.get('hide_polling_output') else None
                 poll_args = poll_result.args_for_next_run or args
-                readable_output = poll_message if not args.get('polled_once') else None
-                poll_args['polled_once'] = True
-                return CommandResults(readable_output=readable_output,
-                                      scheduled_command=ScheduledCommand(command=name, next_run_in_seconds=interval,
+                poll_args['hide_polling_output'] = True
+
+                poll_response = poll_result.partial_result or CommandResults(readable_output= readable_output)
+                poll_response.scheduled_command = ScheduledCommand(command=name, next_run_in_seconds=interval,
                                                                          args=poll_args,
-                                                                         timeout_in_seconds=timeout))
+                                                                         timeout_in_seconds=timeout)
+                return poll_response
             else:
                 return func(client, args).response
 

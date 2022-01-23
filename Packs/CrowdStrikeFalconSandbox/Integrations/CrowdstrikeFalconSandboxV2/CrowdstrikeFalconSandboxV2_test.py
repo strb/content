@@ -145,7 +145,7 @@ def test_results_poll_state_polling_true(state, mocker, requests_mock):
     assert sc._args['Polling']
     assert sc._args['JobID'] == key
     assert sc._args['file-type'] == filetype
-    assert sc._args['polled_once']
+    assert sc._args['hide_polling_output']
 
 
 def test_results_in_progress_polling_true_with_file(mocker, requests_mock):
@@ -229,7 +229,7 @@ def test_crowdstrike_scan_command_polling_true(mocker, requests_mock):
     requests_mock.post(BASE_URL + '/search/hashes', json=[])
     response = crowdstrike_scan_command(client, {"file": "filehash", "Polling": True})
     assert response.scheduled_command._args['file'] == 'filehash'
-    assert response.scheduled_command._args['polled_once']
+    assert response.scheduled_command._args['hide_polling_output']
 
 
 def test_crowdstrike_scan_command_polling_false(requests_mock):

@@ -62,7 +62,7 @@ Get summary information for a given MD5, SHA1 or SHA256 and all the reports gene
 | file | Comma seperated list of file hashes (MD5, SHA1 or SHA256). Possible values are: . | Required | 
 | Polling | . Possible values are: true, false. | Optional | 
 | JobID | JobID to retrieve scan results for. | Optional | 
-| polled_once | . | Optional | 
+| hide_polling_output | . | Optional | 
 
 
 #### Context Output
@@ -2651,7 +2651,7 @@ Retrieve result data upon a file. NOTE - This command returns a file
 | --- | --- | --- |
 | Polling | Whether the command should poll until the result is ready. Possible values are: true, false. Default is True. | Optional | 
 | file | File hash (MD5, SHA1 or SHA256). Possible values are: . | Optional | 
-| polled_once | . | Optional | 
+| hide_polling_output | . | Optional | 
 | environmentID | Environment ID. Available environments ID: 300: "Linux (Ubuntu 16.04, 64 bit)"", 200: "Android Static Analysis", 120: "Windows 7 64 bit", 110: "Windows 7 32 bit (HWP Support)", 100: "Windows 7 32 bit". Possible values are: 100, 110, 120, 200, 300. | Optional | 
 | JobID | Job ID of file to generate report for. Possible values are: . | Optional | 
 | file-type | Type of the file. Possible values are: xml, json, html, pdf, maec, stix, misp, misp-json, openioc, . Default is pdf. | Optional | 

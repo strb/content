@@ -8866,7 +8866,8 @@ class PollResult:
         self.partial_result = partial_result
 
 
-def poll(name, interval=30, timeout=600, poll_message='Fetching Results:', polling_arg_name="Polling"):
+def poll(name, interval=30, timeout=600, poll_message='Fetching Results:', polling_arg_name="Polling",
+         requires_polling_arg = True):
     """
     To use on a function that should rerun itself
     Commands that use this decorator must have a Polling argument, polling: true in yaml,
@@ -8880,7 +8881,9 @@ def poll(name, interval=30, timeout=600, poll_message='Fetching Results:', polli
     timeout : int
         How long
     poll_message : str
-    The message to display in the war room while polling
+        The message to display in the war room while polling
+    requires_polling_arg: bool
+        Whether a polling argument should be expected as one of the demisto args
     Raises
     ------
     DemistoException
@@ -8889,7 +8892,7 @@ def poll(name, interval=30, timeout=600, poll_message='Fetching Results:', polli
 
     def dec(func):
         def inner(client, args):
-            if args.get(polling_arg_name):
+            if not requires_polling_arg or args.get(polling_arg_name):
                 ScheduledCommand.raise_error_if_not_supported()
                 poll_result = func(client, args)
 
